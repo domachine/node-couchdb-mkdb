@@ -1,0 +1,32 @@
+{
+  "name": "couchdb-mkdb",
+  "version": "0.0.0",
+  "description": "Utility to create couchdb databases easier.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/*.js | faucet"
+  },
+  "author": "Dominik Burgdörfer <db@domachine.de>",
+  "license": "MIT",
+  "dependencies": {
+    "highland": "^2.5.1",
+    "request": "^2.65.0"
+  },
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "tape": "^4.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/domachine/node-couchdb-mkdb.git"
+  },
+  "keywords": [
+    "couchdb",
+    "database",
+    "nosql"
+  ],
+  "bugs": {
+    "url": "https://github.com/domachine/node-couchdb-mkdb/issues"
+  },
+  "homepage": "https://github.com/domachine/node-couchdb-mkdb#readme"
+}
