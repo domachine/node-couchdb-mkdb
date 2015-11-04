@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('highland');
 var request = require('request');
 
