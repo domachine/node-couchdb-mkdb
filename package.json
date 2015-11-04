@@ -1,6 +1,6 @@
 {
   "name": "couchdb-mkdb",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Utility to create couchdb databases easier.",
   "main": "index.js",
   "scripts": {
