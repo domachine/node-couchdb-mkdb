@@ -1,6 +1,6 @@
 {
   "name": "couchdb-mkdb",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "dependencies": {
     "event-stream": {
       "version": "3.3.2",
