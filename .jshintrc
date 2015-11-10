@@ -1,0 +1,7 @@
+{
+  "node": true,
+  "browserify": true,
+  "laxbreak": true,
+  "esnext": true,
+  "eqnull": true
+}

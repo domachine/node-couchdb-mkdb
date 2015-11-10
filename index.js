@@ -1,78 +1,69 @@
 'use strict';
 
-var _ = require('highland');
-var request = require('request');
+var http = require('http');
+var EventEmitter = require('events');
+var xtend = require('xtend');
+var es = require('event-stream');
 
 /**
  * mkdb(name, [userOpts], next)
- * 
+ *
  * `mkdb` makes creating couchdb databases and their security roles easy.
- * 
+ *
  * Available options are:
- *   - `couchdb` Set the url to the couchdb to use.
- *   - `security` Define security-rules for the database 
+ *   - `security` Define security-rules for the database
  *     (see [Couchdb security](http://docs.couchdb.org/en/1.6.1/api/database/security.html))
+ *
+ * The rest of the options are passed to [http.request()](https://nodejs.org/api/http.html#http_http_request_options_callback).
  */
 
-module.exports = function mkdb(name, userOpts, next) {
-
-  // Parse user options
-  if (typeof userOpts === 'function') {
-    next = userOpts;
-    userOpts = null;
-  }
-  userOpts = userOpts || {
-    couchdb: 'http://localhost:5984'
+module.exports = function mkdb(name, opts) {
+  let security = opts.security;
+  let jsonHeaders = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   };
-  let couchdb = userOpts.couchdb;
-  let security = userOpts.security;
-  delete userOpts.security;
-  delete userOpts.couchdb;
+  let emitter = new EventEmitter();
+  delete opts.security;
 
-  // Create the database
-  let opts = {
-    url: couchdb + '/' + name,
-    json: true
-  };
-  _('response', request.put(_.extend(userOpts, opts)))
-    .flatMap(res => {
-      if (res.statusCode != 201) {
-        throw res;
-      } else if (security) {
-        let opts = {
-          url: couchdb + '/' + name + '/_security',
-          json: security
-        };
+  process.nextTick(createDb);
+  return emitter;
 
-        // Set the security rules for the database
-        return _('response', request.put(_.extend(userOpts, opts)))
-          .map(res => {
-            if (res.statusCode != 200) {
-              throw res;
-            } else {
-              return _([res.toJSON()]);
-            }
-          });
-      } else {
-        return _([res.toJSON()])
-      }
-    })
-
-    // Fake created response
-    .map(() => ({
-      statusCode: 201,
-      headers: {
-        'content-type': 'application/json',
-        'content-length': JSON.stringify({name}).length
-      },
-      pipe: dest => dest.end(JSON.stringify({name}))
+  /**
+   * Create the database
+   */
+  function createDb() {
+    http.request(xtend(opts, {
+      method: 'PUT',
+      path: '/' + name,
+      headers: jsonHeaders
     }))
-    .errors((err, push) =>
-      err.statusCode != null
-        ? push(null, err)
-        : push(err)
-    )
-    .errors(next)
-    .each(next.bind(this, null));
-}
+    .on('error', emitter.emit.bind(emitter, 'error'))
+    .on('response', function(r) {
+      if (r.statusCode !== 201) return emitter.emit('errorResponse', r);
+      if (!security) return emitter.emit('success');
+      updateSecurity();
+    })
+    .end();
+  }
 
+  /**
+   * Update the security document of the database
+   */
+  function updateSecurity() {
+    let r = http.request(xtend(opts, {
+      method: 'PUT',
+      path: '/' + name + '/_security',
+      headers: jsonHeaders
+    }));
+
+    es.readArray([security])
+      .pipe(es.stringify())
+      .pipe(r)
+      .on('error', emitter.emit.bind(emitter, 'error'))
+      .on('response', function(r) {
+        if (r.statusCode !== 200) return emitter.emit('errorResponse', r);
+        emitter.emit('success');
+      });
+  }
+};

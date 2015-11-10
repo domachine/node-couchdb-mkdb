@@ -17,28 +17,30 @@ app.post('/', (req, res, next) => {
   let name = 'mydb-' + uuid.v1();
   let opts = {
 
-    // `couchdb` and `security` are special options ...
-    couchdb: app.get('couchdb'),
+    // `security` is a special option ...
+    host: app.get('couchdb'),
     security: {
       admins: {names: [req.user.name], roles: []},
       members: {names: [], roles: []}
     },
 
     // ... all other options are passed to the underlaying `request` function.
-    // See https://github.com/request/request.
-    oauth: app.get('auth')
+    // See [http.request()](https://nodejs.org/api/http.html#http_http_request_options_callback)
+    auth: app.get('auth')
   };
 
   // Use the mkdb utility to create the database
-  mkdb(name, opts, (err, response) => {
-    if (err) return next(err);
-
-    // Just crap couchdb's response and push it down to the client
-    response.pipe(
-      res.set(response.headers)
-        .status(response.statusCode)
-    );
-  });
+  mkdb(name, opts)
+    .on('error', next)
+    .on('errorResponse', function(response) {
+      response.pipe(
+        res.set(response.headers)
+          .status(response.statusCode)
+      );
+    })
+    .on('success', function() {
+      res.send({ok: true});
+    });
 });
 ```
 
@@ -52,7 +54,21 @@ app.post('/', (req, res, next) => {
 
 Available options are:
 
-  - `couchdb` The url to the couchdb
   - `security` The security rules to apply to the database.  See [Couchdb security](http://docs.couchdb.org/en/1.6.1/api/database/security.html)
 
-All other options are passed to the underlaying [request](https://github.com/request/request) function.
+All other options are passed to the underlaying
+[http.request()](https://nodejs.org/api/http.html#http_http_request_options_callback)
+function.
+
+#### Events
+
+  * `error(err)` - Emitted on request error
+  * `errorResponse(res)` - Emitted when couchdb returns a paranormal response
+  * `success` - Emitted on success
+
+## Tests
+
+    $ git clone https://github.com/domachine/node-couchdb-mkdb.git
+    $ cd node-couchdb-mkdb
+    $ npm i
+    $ npm test
