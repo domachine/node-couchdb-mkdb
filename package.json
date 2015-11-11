@@ -4,13 +4,14 @@
   "description": "Utility to create couchdb databases easier.",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/*.js | faucet",
+    "test": "npm run jshint && tape test/*.js | faucet",
     "jshint": "jshint ."
   },
   "author": "Dominik Burgdörfer <db@domachine.de>",
   "license": "MIT",
   "dependencies": {
     "event-stream": "^3.3.2",
+    "request": "^2.65.0",
     "xtend": "^4.0.1"
   },
   "devDependencies": {

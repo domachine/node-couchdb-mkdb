@@ -1,7 +1,7 @@
 'use strict';
 
-var http = require('http');
 var EventEmitter = require('events');
+var request = require('request');
 var xtend = require('xtend');
 var es = require('event-stream');
 
@@ -19,10 +19,6 @@ var es = require('event-stream');
 
 module.exports = function mkdb(name, opts) {
   let security = opts.security;
-  let jsonHeaders = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  };
   let emitter = new EventEmitter();
   delete opts.security;
 
@@ -33,39 +29,27 @@ module.exports = function mkdb(name, opts) {
    * Create the database
    */
   function createDb() {
-    http.request(xtend(opts, {
-      method: 'PUT',
-      path: '/' + name,
-      headers: jsonHeaders
-    }))
-    .on('error', emitter.emit.bind(emitter, 'error'))
-    .on('response', function(r) {
-      if (r.statusCode !== 201) {
-        emitter.emit('errorResponse', r);
-        return emitter.emit('response', r);
-      }
-      if (!security) {
-        emitter.emit('response', r);
-        return emitter.emit('success');
-      }
-      updateSecurity();
-    })
-    .end();
+    request.put('/' + name, xtend(opts, {json: true}))
+      .on('error', emitter.emit.bind(emitter, 'error'))
+      .on('response', function(r) {
+        if (r.statusCode !== 201) {
+          emitter.emit('errorResponse', r);
+          return emitter.emit('response', r);
+        }
+        if (!security) {
+          emitter.emit('response', r);
+          return emitter.emit('success');
+        }
+        updateSecurity();
+      })
+      .end();
   }
 
   /**
    * Update the security document of the database
    */
   function updateSecurity() {
-    let r = http.request(xtend(opts, {
-      method: 'PUT',
-      path: '/' + name + '/_security',
-      headers: jsonHeaders
-    }));
-
-    es.readArray([security])
-      .pipe(es.stringify())
-      .pipe(r)
+    request.put('/' + name + '/_security', xtend(opts, {json: security}))
       .on('error', emitter.emit.bind(emitter, 'error'))
       .on('response', function(r) {
         emitter.emit('response', r);

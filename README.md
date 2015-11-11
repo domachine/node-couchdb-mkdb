@@ -24,8 +24,8 @@ app.post('/', (req, res, next) => {
     },
 
     // ... all other options are passed to the underlaying `request` function.
-    // See [http.request()](https://nodejs.org/api/http.html#http_http_request_options_callback)
-    host: app.get('couchdb'),
+    // See https://github.com/request/request#requestoptions-callback
+    baseUrl: app.get('couchdb'),
     auth: app.get('auth')
   };
 
@@ -64,7 +64,7 @@ Available options are:
   - `security` The security rules to apply to the database.  See [Couchdb security](http://docs.couchdb.org/en/1.6.1/api/database/security.html)
 
 All other options are passed to the underlaying
-[http.request()](https://nodejs.org/api/http.html#http_http_request_options_callback)
+[request()](https://github.com/request/request#requestoptions-callback)
 function.
 
 #### Events
@@ -82,6 +82,15 @@ function.
     $ npm test
 
 ## Update notes
+
+### v2.0
+
+`mkdb` now uses [request](https://github.com/request/request) as transport
+engine.  Therefore the options you can pass are similar to
+[request](https://github.com/request/request)'s options.  See
+[docs](https://github.com/request/request#requestoptions-callback).
+
+### v1.1
 
 The first version had an 'errorResponse' event.  This has now been deprecated.
 Use the 'response' event instead and check the statusCode.

@@ -25,7 +25,7 @@ test('setup', t => {
 
 test('success test', t => {
   var responseCalled = false;
-  mkdb('db1', {port: '5984'})
+  mkdb('db1', {baseUrl: 'http://localhost:5984'})
     .on('response', function() {
       responseCalled = true;
     })
@@ -36,14 +36,14 @@ test('success test', t => {
 });
 
 test('error-response test', t => {
-  mkdb('dbfail', {port: '5984'})
+  mkdb('dbfail', {baseUrl: 'http://localhost:5984'})
     .on('response', () => {
       t.end();
     });
 });
 
 test('security fail test', t => {
-  mkdb('dbsecurity', {port: '5984', security: {}})
+  mkdb('dbsecurity', {baseUrl: 'http://localhost:5984', security: {}})
     .on('response', () => {
       t.end();
     });
@@ -51,8 +51,9 @@ test('security fail test', t => {
 
 test('security success test', t => {
   var responseCalled = false;
-  mkdb('dbsecuritysuccess', {port: '5984', security: {}})
-    .on('response', function() {
+  mkdb('dbsecuritysuccess', {baseUrl: 'http://localhost:5984', security: {}})
+    .on('response', function(res) {
+      t.assert(res.body == null);
       responseCalled = true;
     })
     .on('success', () => {
