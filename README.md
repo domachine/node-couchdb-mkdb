@@ -32,14 +32,21 @@ app.post('/', (req, res, next) => {
   // Use the mkdb utility to create the database
   mkdb(name, opts)
     .on('error', next)
-    .on('errorResponse', function(response) {
+    .on('response', function(response) {
+
+      // For error handling check the statusCode
+      if (!(response.statusCode in [200, 201])) {
+        console.log('Database wasn\'t created or security couldn\'t be updated');
+      }
       response.pipe(
         res.set(response.headers)
           .status(response.statusCode)
       );
     })
     .on('success', function() {
-      res.send({ok: true});
+
+      // Event 'response' has already been emitted
+      console.log('Database successfully created');
     });
 });
 ```
@@ -63,7 +70,8 @@ function.
 #### Events
 
   * `error(err)` - Emitted on request error
-  * `errorResponse(res)` - Emitted when couchdb returns a paranormal response
+  * `errorResponse(res)` - *deprecated* Emitted when couchdb returns a paranormal response. See [Update notes](#update-notes)
+  * `response(res)` - Emitted when couchdb returns a paranormal response
   * `success` - Emitted on success
 
 ## Tests
@@ -72,3 +80,8 @@ function.
     $ cd node-couchdb-mkdb
     $ npm i
     $ npm test
+
+## Update notes
+
+The first version had an 'errorResponse' event.  This has now been deprecated.
+Use the 'response' event instead and check the statusCode.

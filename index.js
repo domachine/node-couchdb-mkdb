@@ -40,8 +40,14 @@ module.exports = function mkdb(name, opts) {
     }))
     .on('error', emitter.emit.bind(emitter, 'error'))
     .on('response', function(r) {
-      if (r.statusCode !== 201) return emitter.emit('errorResponse', r);
-      if (!security) return emitter.emit('success');
+      if (r.statusCode !== 201) {
+        emitter.emit('errorResponse', r);
+        return emitter.emit('response', r);
+      }
+      if (!security) {
+        emitter.emit('response', r);
+        return emitter.emit('success');
+      }
       updateSecurity();
     })
     .end();
@@ -62,6 +68,7 @@ module.exports = function mkdb(name, opts) {
       .pipe(r)
       .on('error', emitter.emit.bind(emitter, 'error'))
       .on('response', function(r) {
+        emitter.emit('response', r);
         if (r.statusCode !== 200) return emitter.emit('errorResponse', r);
         emitter.emit('success');
       });

@@ -24,29 +24,39 @@ test('setup', t => {
 });
 
 test('success test', t => {
+  var responseCalled = false;
   mkdb('db1', {port: '5984'})
+    .on('response', function() {
+      responseCalled = true;
+    })
     .on('success', () => {
+      t.assert(responseCalled);
       t.end();
     });
 });
 
 test('error-response test', t => {
   mkdb('dbfail', {port: '5984'})
-    .on('errorResponse', () => {
+    .on('response', () => {
       t.end();
     });
 });
 
 test('security fail test', t => {
   mkdb('dbsecurity', {port: '5984', security: {}})
-    .on('errorResponse', () => {
+    .on('response', () => {
       t.end();
     });
 });
 
 test('security success test', t => {
+  var responseCalled = false;
   mkdb('dbsecuritysuccess', {port: '5984', security: {}})
+    .on('response', function() {
+      responseCalled = true;
+    })
     .on('success', () => {
+      t.assert(responseCalled);
       t.end();
     });
 });
