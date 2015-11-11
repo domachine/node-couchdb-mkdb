@@ -18,7 +18,6 @@ app.post('/', (req, res, next) => {
   let opts = {
 
     // `security` is a special option ...
-    host: app.get('couchdb'),
     security: {
       admins: {names: [req.user.name], roles: []},
       members: {names: [], roles: []}
@@ -26,6 +25,7 @@ app.post('/', (req, res, next) => {
 
     // ... all other options are passed to the underlaying `request` function.
     // See [http.request()](https://nodejs.org/api/http.html#http_http_request_options_callback)
+    host: app.get('couchdb'),
     auth: app.get('auth')
   };
 
@@ -71,7 +71,7 @@ function.
 
   * `error(err)` - Emitted on request error
   * `errorResponse(res)` - *deprecated* Emitted when couchdb returns a paranormal response. See [Update notes](#update-notes)
-  * `response(res)` - Emitted when couchdb returns a paranormal response
+  * `response(res)` - Emitted when couchdb responds to the last action
   * `success` - Emitted on success
 
 ## Tests
