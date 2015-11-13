@@ -40,6 +40,10 @@ module.exports = function mkdb(name, opts) {
           emitter.emit('response', r);
           return emitter.emit('success');
         }
+
+        // Pull out unused data to avoid memory wasting.  See
+        // https://nodejs.org/api/http.html#http_class_http_clientrequest.
+        r.resume();
         updateSecurity();
       })
       .end();
