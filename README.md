@@ -35,7 +35,7 @@ app.post('/', (req, res, next) => {
     .on('response', function(response) {
 
       // For error handling check the statusCode
-      if (!(response.statusCode in [200, 201])) {
+      if ((response.statusCode / 100 | 0) !== 2) {
         console.log('Database wasn\'t created or security couldn\'t be updated');
       }
       response.pipe(
