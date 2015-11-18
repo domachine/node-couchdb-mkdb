@@ -1,5 +1,7 @@
 # couchdb-mkdb
 
+[![Build Status](https://travis-ci.org/domachine/node-couchdb-mkdb.svg?branch=master)](https://travis-ci.org/domachine/node-couchdb-mkdb)
+
 `couchdb-mkdb` makes it easy to create databases and stream couchdb's response.
 
 ## Installation
